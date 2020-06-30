@@ -17,11 +17,10 @@ creates the internally maintained virtual heap, and expects two parameters:
 * `N`, the number of available pages
 These parameters together give you the total available memory space as `N * p`.
 
-#### Return
 This operation must respond with a heap identifier of the form `HEAP-nnn` where `nnn` is an integer
 between `100` and `999`.
 
-#### Errors
+Note:
 * It is an error if any other operation is invoked prior to this one
 * If this operation is invoked more than once, subsequent calls must be NOPs
 
@@ -47,7 +46,6 @@ allocated for each.
 The `RESET` command clears any maintained state (i.e. clears the heap) and starts over, causing the
 service to expect a `NEW` command again.
 
-
 ## Examples
 Note each command run below against the service is shown as _OPERATION parameters_
 as opposed to HTTP requests and responses.
@@ -56,15 +54,24 @@ as opposed to HTTP requests and responses.
 NEW with p=16, N=64
 
 // ok, buffer of size 1024 bytes created
+```
 
+Now allocate 16 bytes:
+```
 ALLOC 16
 Return: success, tag 1
 // ok, tag = "1"
+```
 
+Allocate 2K more (expected to fail since our total heap is only 1K):
+```
 ALLOC 2048
 Return: error, allocation failed
 // allocation failed
+```
 
+Now let's see what the heap looks like:
+```
 SHOW
 1...............
 ................
@@ -73,11 +80,18 @@ SHOW
 
 <Allocations by tag>
 1: 16 bytes
+```
+Notice that tag `1` is shown indicating that a page was allocated for it.
 
+Let's allocate `32` more bytes:
+```
 ALLOC 32
 Return: success, tag 2
 // ok, tag = "2"
+```
 
+Check:
+```
 SHOW
 122.............
 ................
@@ -87,15 +101,24 @@ SHOW
 <Allocations by tag>
 1: 16 bytes
 2: 32 bytes
+```
 
+Now let's deallocate the first allocation using its tag `1`:
+```
 DEALLOC tag=1
 Return: Success
 // deallocation succeeded
+```
 
+Now deallocate an unknown tag:
+```
 DEALLOC tag=99
 Return: Failed, unknown tag
 // deallocation failed, unknown tag
+```
 
+Check:
+```
 SHOW
 .22.............
 ................
@@ -104,7 +127,6 @@ SHOW
 
 <Allocations by tag>
 2: 32 bytes
-
 ```
 
 ## NOTES
