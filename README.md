@@ -1,55 +1,71 @@
 Mason Engineering - Software Engineer exercise
 ===
 
-# "Memallook" - a visual memalloc simulation
+# "Memallook" Service - a visual memalloc simulation
 
-Your objective is to write a simple command-line tool named `memallook` in one of the languages
-shown below. This tool's primary job is to maintain a stateful record of memory allocations performed
-in a buffer and display it when requested.
+Your objective is to write a simple service named `memallook` in one of the languages
+shown below. This service's primary job is to maintain a stateful record of memory allocations
+performed in a buffer and return it when requested.
 
-When run for the first time, the tool expects two parameters like so:
-`memallook p N`, where:
-* `p` is the page size in bytes
-* `N` is the number of available pages
+## Operations
+The service supports a set of operations discussed below.
 
+### NEW
+This is the first operation that must be invoked before any of the others is invoked. This operation
+creates the internally maintained virtual heap, and expects two parameters:
+* `p`, the page size in bytes
+* `N`, the number of available pages
 These parameters together give you the total available memory space as `N * p`.
 
-Subsequent invocations can be in one of these forms:
-1. `memallook alloc M`
-2. `memallook dealloc T`
-3. `memallook show`
-4. `memallook clear`
+#### Return
+This operation must respond with a heap identifier of the form `HEAP-nnn` where `nnn` is an integer
+between `100` and `999`.
 
-The first command `alloc` "allocates" a block of `M` bytes in the memory buffer and returns
+#### Errors
+* It is an error if any other operation is invoked prior to this one
+* If this operation is invoked more than once, subsequent calls must be NOPs
+
+### ALLOC
+
+The `ALLOC` command "allocates" a block of `M` bytes in the memory buffer and returns
 a unique tag `T` which sort of can be treated like a pointer. If `M` bytes can no longer be
-allocated, the tool returns an error.
+allocated, the service must return an error.
 
-The second command `dealloc` deallocates a previously allocated block with tag `T`. If `T` is
+### DEALLOC
+
+The `DEALLOC` command deallocates a previously allocated block with tag `T`. If `T` is
 unknown, this is an error.
 
-The third command displays the state of the memory on the terminal using a simple character matrix
+### SHOW
+
+The `SHOW` command returns the state of the memory using a simple character matrix
 with an `x` displaying an occupied page, and a tag character implying a free page (see example below).
 This grid/matrix is then followed by a listing of all tags allocated and the number of bytes
 allocated for each.
 
-The last form clears any maintained state and starts over, causing the tool to expect values
-for `p` and `N` for the next invocation.
+### RESET
+The `RESET` command clears any maintained state (i.e. clears the heap) and starts over, causing the
+service to expect a `NEW` command again.
 
-## Example
 
-Here is an example run of the tool:
+## Examples
+Note each command run below against the service is shown as _OPERATION parameters_
+as opposed to HTTP requests and responses.
 
 ```
-$ memallook 16 64
-ok, buffer of size 1024 bytes created
+NEW with p=16, N=64
 
-$ memallook alloc 16
-ok, tag = "1"
+// ok, buffer of size 1024 bytes created
 
-$ memallook alloc 2048
-allocation failed
+ALLOC 16
+Return: success, tag 1
+// ok, tag = "1"
 
-$ memallook show
+ALLOC 2048
+Return: error, allocation failed
+// allocation failed
+
+SHOW
 1...............
 ................
 ................
@@ -58,10 +74,11 @@ $ memallook show
 <Allocations by tag>
 1: 16 bytes
 
-$ memallook alloc 32
-ok, tag = "2"
+ALLOC 32
+Return: success, tag 2
+// ok, tag = "2"
 
-$ memallook show
+SHOW
 122.............
 ................
 ................
@@ -71,13 +88,15 @@ $ memallook show
 1: 16 bytes
 2: 32 bytes
 
-$ memallook dealloc 1
-deallocation succeeded
+DEALLOC tag=1
+Return: Success
+// deallocation succeeded
 
-$ memallook dealloc 99
-deallocation failed, unknown tag
+DEALLOC tag=99
+Return: Failed, unknown tag
+// deallocation failed, unknown tag
 
-$ memallook show
+SHOW
 .22.............
 ................
 ................
@@ -88,7 +107,7 @@ $ memallook show
 
 ```
 
-NOTES:
+## NOTES
 * Display matrix sizing can be chosen arbitrarily and does not need to match
   the example above
 * The tag uses strings "1", "2", etc. This is also only a suggestion
@@ -100,48 +119,16 @@ NOTES:
 > evaluation process. We understand many candidates have existing jobs
 > demanding their attention.
 
-If you reach this stage, consider adding support for a command `defrag` that
+If you reach this stage, consider adding support for a command `DEFRAG` that
 will perform defragmentation of the memory buffer if possible.
 
 ## Example
+Continuing the above example:
 
 ```
-$ memallook 16 64
-ok, buffer of size 1024 bytes created
 
-$ memallook alloc 160
-ok, tag = "1"
-
-$ memallook alloc 2048
-allocation failed
-
-$ memallook show
-1111111111......
-................
-................
-................
-
-<Allocations by tag>
-1: 160 bytes
-
-$ memallook alloc 32
-ok, tag = "2"
-
-$ memallook show
-111111111122....
-................
-................
-................
-
-<Allocations by tag>
-1: 160 bytes
-2: 32 bytes
-
-$ memallook dealloc 1
-deallocation succeeded
-
-$ memallook show
-..........22....
+SHOW
+.22.............
 ................
 ................
 ................
@@ -149,10 +136,11 @@ $ memallook show
 <Allocations by tag>
 2: 32 bytes
 
-$ memallook defrag
-defragmentation complete
+DEFRAG
+Return: Success
 
-$ memallook show
+
+SHOW
 22..............
 ................
 ................
@@ -165,23 +153,21 @@ $ memallook show
 
 # Submission
 
-You are to build a small program that can be run from the command line as described above.
-Unless you have been instructed otherwise, you may use any of the following languages:
+You are to build a service that responds over HTTP. Unless you have been instructed otherwise, you may use
+any of the following languages/stacks:
 
-* C/C++
 * Golang
 * Java
 * Python 2/3
-* Rust
-* Kotlin
+* Node.js
 
 If you have a different one you prefer, please contact your interviewer.
 
 ## DOs
-* Fork this repo to your own user space, and add @scorpiodawg and/or @trevorhalvorson as an
-  outside collaborator. If you prefer to keep your work private, you may
+* Fork this repo to your own user space, and add @scorpiodawg, @trevorhalvorson, @grimkey
+  as outside collaborators. If you prefer to keep your work private, you may
   [duplicate](https://help.github.com/en/articles/duplicating-a-repository)
-  it instead and add us as collaborators.
+  it instead.
 * Push all changes to the `master` branch of your fork, and let us know when you're ready
   to officially submit. We will fork your repo and review your code. Changes made after that
   will likely be ignored, so please do submit only after you are ready
