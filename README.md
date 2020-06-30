@@ -3,9 +3,9 @@ Mason Engineering - Software Engineer exercise
 
 # "Memallook" Service - a visual memalloc simulation
 
-Your objective is to write a simple service named `memallook` in one of the languages
-shown below. This service's primary job is to maintain a stateful record of memory allocations
-performed in a buffer and return it when requested.
+Your objective is to write a simple HTTP-based service named `memallook`. This service's primary job
+is to maintain a stateful record of memory allocations performed in a buffer and return it when requested.
+In other words, it is a toy memory allocator fronted by a service.
 
 ## Operations
 The service supports a set of operations discussed below.
@@ -193,7 +193,6 @@ If you have a different one you prefer, please contact your interviewer.
 * Push all changes to the `master` branch of your fork, and let us know when you're ready
   to officially submit. We will fork your repo and review your code. Changes made after that
   will likely be ignored, so please do submit only after you are ready
-* Do use any popular, modern language and technology stack of your choice.
 * Do ensure your final submission includes everything so that the project can be
   **built, deployed, runnable and accessible locally**.
 * Do write self-documenting code
