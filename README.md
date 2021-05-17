@@ -186,7 +186,7 @@ any of the following languages/stacks:
 If you have a different one you prefer, please contact your interviewer.
 
 ## DOs
-* Fork this repo to your own user space, and add @scorpiodawg, @trevorhalvorson, @grimkey
+* Fork this repo to your own user space, and add @cyanogen and @trevorhalvorson
   as outside collaborators. If you prefer to keep your work private, you may
   [duplicate](https://help.github.com/en/articles/duplicating-a-repository)
   it instead.
